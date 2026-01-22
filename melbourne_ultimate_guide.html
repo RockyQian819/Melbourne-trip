@@ -1,0 +1,1663 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Melbourne & Great Ocean Road Complete Guide - Feb 16-21, 2026</title>
+    <link rel="stylesheet" href="https://unpkg.com/leaflet@1.9.4/dist/leaflet.css" />
+    <script src="https://unpkg.com/leaflet@1.9.4/dist/leaflet.js"></script>
+    <style>
+        html {
+            scroll-behavior: smooth;
+        }
+        
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            -webkit-tap-highlight-color: rgba(102, 126, 234, 0.2);
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+            background: #f5f5f5;
+            line-height: 1.6;
+            overflow: hidden;
+            height: 100vh;
+            -webkit-font-smoothing: antialiased;
+            -moz-osx-font-smoothing: grayscale;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 20px 30px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            z-index: 1000;
+            position: relative;
+        }
+        
+        .header-left h1 {
+            font-size: 1.8em;
+            margin-bottom: 5px;
+            text-shadow: 2px 2px 4px rgba(0,0,0,0.2);
+        }
+        
+        .header-left p {
+            font-size: 0.95em;
+            opacity: 0.95;
+        }
+        
+        .header-right {
+            text-align: right;
+        }
+        
+        .header-right .subtitle {
+            font-size: 0.9em;
+            opacity: 0.9;
+            margin-bottom: 5px;
+        }
+        
+        .toggle-btn {
+            background: rgba(255,255,255,0.2);
+            border: 2px solid white;
+            color: white;
+            padding: 8px 20px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 600;
+            font-size: 0.9em;
+            transition: all 0.3s ease;
+        }
+        
+        .toggle-btn:hover {
+            background: white;
+            color: #667eea;
+        }
+        
+        .main-container {
+            display: flex;
+            height: calc(100vh - 80px);
+            position: relative;
+        }
+        
+        .map-container {
+            flex: 1;
+            position: relative;
+            background: white;
+        }
+        
+        .controls {
+            background: #f8f9fa;
+            padding: 15px;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            justify-content: center;
+            align-items: center;
+            border-bottom: 1px solid #dee2e6;
+        }
+        
+        .day-button {
+            padding: 10px 20px;
+            border: none;
+            border-radius: 20px;
+            font-size: 0.85em;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            background: white;
+            color: #495057;
+            box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+        }
+        
+        .day-button:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 12px rgba(0,0,0,0.15);
+        }
+        
+        .day-button.active {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+        }
+        
+        .day-button.day1 { border-left: 4px solid #FF6B6B; }
+        .day-button.day2 { border-left: 4px solid #4ECDC4; }
+        .day-button.day3 { border-left: 4px solid #45B7D1; }
+        .day-button.day4 { border-left: 4px solid #F7B731; }
+        .day-button.day5 { border-left: 4px solid #5F27CD; }
+        .day-button.day6 { border-left: 4px solid #00D2D3; }
+        
+        #map {
+            height: calc(100% - 65px);
+            width: 100%;
+        }
+        
+        .legend {
+            background: white;
+            padding: 12px 15px;
+            border-radius: 10px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.15);
+            position: absolute;
+            bottom: 20px;
+            left: 20px;
+            z-index: 1000;
+            max-width: 220px;
+        }
+        
+        .legend h3 {
+            margin-bottom: 10px;
+            color: #333;
+            font-size: 0.95em;
+        }
+        
+        .legend-item {
+            display: flex;
+            align-items: center;
+            margin-bottom: 6px;
+            font-size: 0.8em;
+        }
+        
+        .legend-line {
+            width: 25px;
+            height: 3px;
+            margin-right: 8px;
+            border-radius: 2px;
+        }
+        
+        .itinerary-sidebar {
+            width: 500px;
+            background: white;
+            box-shadow: -2px 0 10px rgba(0,0,0,0.1);
+            overflow-y: auto;
+            position: relative;
+            transition: transform 0.3s ease;
+        }
+        
+        .itinerary-sidebar.hidden {
+            transform: translateX(100%);
+        }
+        
+        .itinerary-content {
+            padding: 25px;
+        }
+        
+        .summary-card {
+            background: linear-gradient(135deg, #43e97b 0%, #38f9d7 100%);
+            color: white;
+            padding: 20px;
+            border-radius: 12px;
+            margin-bottom: 25px;
+        }
+        
+        .summary-card h3 {
+            font-size: 1.2em;
+            margin-bottom: 12px;
+        }
+        
+        .summary-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+        
+        .summary-item {
+            background: rgba(255,255,255,0.2);
+            padding: 10px;
+            border-radius: 8px;
+            backdrop-filter: blur(10px);
+            font-size: 0.85em;
+        }
+        
+        .summary-item strong {
+            display: block;
+            margin-bottom: 3px;
+        }
+        
+        .day-card {
+            background: white;
+            border: 2px solid #e9ecef;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            overflow: hidden;
+            transition: all 0.3s ease;
+        }
+        
+        .day-card:hover {
+            box-shadow: 0 5px 20px rgba(102, 126, 234, 0.15);
+        }
+        
+        .day-card-header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 15px 20px;
+            cursor: pointer;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .day-card-header h3 {
+            font-size: 1.2em;
+            margin-bottom: 3px;
+        }
+        
+        .day-card-header p {
+            font-size: 0.9em;
+            opacity: 0.95;
+        }
+        
+        .expand-icon {
+            font-size: 1.5em;
+            transition: transform 0.3s ease;
+        }
+        
+        .day-card.expanded .expand-icon {
+            transform: rotate(180deg);
+        }
+        
+        .day-card-body {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease;
+        }
+        
+        .day-card.expanded .day-card-body {
+            max-height: 3000px;
+        }
+        
+        .day-card-content {
+            padding: 20px;
+        }
+        
+        .hotel-badge {
+            background: #fff3cd;
+            border-left: 4px solid #ffc107;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.9em;
+        }
+        
+        .hotel-badge strong {
+            color: #856404;
+        }
+        
+        .location-mini {
+            background: #f8f9fa;
+            border-left: 3px solid #667eea;
+            padding: 12px;
+            margin-bottom: 10px;
+            border-radius: 6px;
+            transition: all 0.2s ease;
+        }
+        
+        .location-mini:hover {
+            background: #e9ecef;
+            border-left-width: 5px;
+        }
+        
+        .location-mini-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 5px;
+        }
+        
+        .location-mini-title {
+            font-weight: 600;
+            color: #2c3e50;
+            font-size: 0.95em;
+        }
+        
+        .time-mini {
+            background: #667eea;
+            color: white;
+            padding: 2px 10px;
+            border-radius: 10px;
+            font-size: 0.75em;
+            font-weight: 600;
+        }
+        
+        .location-mini-details {
+            color: #666;
+            font-size: 0.85em;
+            margin-bottom: 8px;
+        }
+        
+        .map-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 5px;
+            padding: 5px 12px;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 15px;
+            font-size: 0.75em;
+            font-weight: 600;
+            transition: all 0.2s ease;
+        }
+        
+        .map-link:hover {
+            background: #333;
+            transform: translateY(-1px);
+        }
+        
+        .driving-badge {
+            background: #d1ecf1;
+            border-left: 4px solid #17a2b8;
+            padding: 10px 15px;
+            border-radius: 6px;
+            margin-bottom: 15px;
+            font-size: 0.85em;
+        }
+        
+        .driving-badge strong {
+            color: #0c5460;
+        }
+        
+        .tips-card {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+        }
+        
+        .tips-card h3 {
+            color: #495057;
+            font-size: 1.1em;
+            margin-bottom: 12px;
+        }
+        
+        .tips-card ul {
+            margin-left: 20px;
+        }
+        
+        .tips-card li {
+            margin-bottom: 8px;
+            color: #666;
+            font-size: 0.9em;
+        }
+        
+        .leaflet-popup-content {
+            margin: 15px;
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Arial, sans-serif;
+        }
+        
+        .popup-title {
+            font-weight: bold;
+            font-size: 1.1em;
+            color: #2c3e50;
+            margin-bottom: 8px;
+        }
+        
+        .popup-time {
+            background: #667eea;
+            color: white;
+            padding: 4px 12px;
+            border-radius: 12px;
+            font-size: 0.85em;
+            display: inline-block;
+            margin-bottom: 8px;
+        }
+        
+        .popup-details {
+            color: #666;
+            margin-bottom: 10px;
+            line-height: 1.4;
+        }
+        
+        .popup-address {
+            color: #888;
+            font-size: 0.9em;
+            margin-bottom: 10px;
+            font-style: italic;
+        }
+        
+        .popup-link {
+            display: inline-block;
+            padding: 8px 16px;
+            background: #000;
+            color: white;
+            text-decoration: none;
+            border-radius: 20px;
+            font-size: 0.9em;
+            font-weight: 600;
+            margin-top: 5px;
+        }
+        
+        .popup-link:hover {
+            background: #333;
+        }
+        
+        /* Scrollbar styling */
+        .itinerary-sidebar::-webkit-scrollbar {
+            width: 8px;
+        }
+        
+        .itinerary-sidebar::-webkit-scrollbar-track {
+            background: #f1f1f1;
+        }
+        
+        .itinerary-sidebar::-webkit-scrollbar-thumb {
+            background: #667eea;
+            border-radius: 4px;
+        }
+        
+        .itinerary-sidebar::-webkit-scrollbar-thumb:hover {
+            background: #5568d3;
+        }
+        
+        @media (max-width: 1200px) {
+            .itinerary-sidebar {
+                width: 400px;
+            }
+        }
+        
+        @media (max-width: 968px) {
+            body {
+                overflow: auto;
+            }
+            
+            .header {
+                padding: 15px;
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+            
+            .header-left h1 {
+                font-size: 1.5em;
+            }
+            
+            .header-left p {
+                font-size: 0.85em;
+            }
+            
+            .header-right {
+                text-align: center;
+            }
+            
+            .header-right .subtitle {
+                font-size: 0.8em;
+            }
+            
+            .toggle-btn {
+                display: none;
+            }
+            
+            .main-container {
+                flex-direction: column;
+                height: auto;
+            }
+            
+            .map-container {
+                height: 60vh;
+                min-height: 400px;
+            }
+            
+            #map {
+                height: calc(100% - 70px);
+            }
+            
+            .controls {
+                padding: 10px 8px;
+                gap: 6px;
+                overflow-x: auto;
+                flex-wrap: nowrap;
+                justify-content: flex-start;
+                -webkit-overflow-scrolling: touch;
+            }
+            
+            .controls::-webkit-scrollbar {
+                height: 4px;
+            }
+            
+            .controls::-webkit-scrollbar-thumb {
+                background: #667eea;
+                border-radius: 2px;
+            }
+            
+            .day-button {
+                padding: 10px 16px;
+                font-size: 0.8em;
+                white-space: nowrap;
+                flex-shrink: 0;
+            }
+            
+            .legend {
+                font-size: 0.75em;
+                padding: 8px 10px;
+                max-width: 160px;
+                bottom: 10px;
+                left: 10px;
+            }
+            
+            .legend-item {
+                font-size: 0.75em;
+                margin-bottom: 4px;
+            }
+            
+            .legend-line {
+                width: 20px;
+                height: 3px;
+            }
+            
+            .itinerary-sidebar {
+                width: 100%;
+                height: auto;
+                max-height: none;
+                overflow-y: visible;
+                box-shadow: none;
+                border-top: 2px solid #e9ecef;
+            }
+            
+            .itinerary-sidebar.hidden {
+                transform: none;
+            }
+            
+            .itinerary-content {
+                padding: 20px 15px;
+            }
+            
+            .summary-card {
+                padding: 15px;
+            }
+            
+            .summary-card h3 {
+                font-size: 1.1em;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr 1fr;
+                gap: 10px;
+            }
+            
+            .summary-item {
+                padding: 8px;
+                font-size: 0.8em;
+            }
+            
+            .day-card {
+                margin-bottom: 15px;
+            }
+            
+            .day-card-header {
+                padding: 12px 15px;
+            }
+            
+            .day-card-header h3 {
+                font-size: 1.1em;
+            }
+            
+            .day-card-header p {
+                font-size: 0.85em;
+            }
+            
+            .day-card-content {
+                padding: 15px;
+            }
+            
+            .location-mini {
+                padding: 10px;
+            }
+            
+            .location-mini-title {
+                font-size: 0.9em;
+            }
+            
+            .location-mini-details {
+                font-size: 0.8em;
+            }
+            
+            .map-link {
+                padding: 6px 14px;
+                font-size: 0.8em;
+            }
+            
+            .tips-card {
+                padding: 15px;
+            }
+            
+            .tips-card h3 {
+                font-size: 1em;
+            }
+            
+            .tips-card li {
+                font-size: 0.85em;
+            }
+        }
+        
+        @media (max-width: 600px) {
+            .header-left h1 {
+                font-size: 1.3em;
+            }
+            
+            .header-left p {
+                font-size: 0.75em;
+            }
+            
+            .map-container {
+                height: 50vh;
+                min-height: 350px;
+            }
+            
+            .controls {
+                padding: 8px 5px;
+            }
+            
+            .day-button {
+                padding: 8px 12px;
+                font-size: 0.75em;
+            }
+            
+            .legend {
+                font-size: 0.7em;
+                padding: 6px 8px;
+                max-width: 140px;
+            }
+            
+            .legend h3 {
+                font-size: 0.85em;
+                margin-bottom: 6px;
+            }
+            
+            .legend-item {
+                font-size: 0.7em;
+            }
+            
+            .summary-grid {
+                grid-template-columns: 1fr;
+                gap: 8px;
+            }
+            
+            .summary-item {
+                font-size: 0.75em;
+            }
+            
+            .day-card-header h3 {
+                font-size: 1em;
+            }
+            
+            .day-card-header p {
+                font-size: 0.8em;
+            }
+            
+            .expand-icon {
+                font-size: 1.2em;
+            }
+            
+            .location-mini-title {
+                font-size: 0.85em;
+            }
+            
+            .time-mini {
+                font-size: 0.7em;
+                padding: 2px 8px;
+            }
+            
+            .location-mini-details {
+                font-size: 0.75em;
+            }
+            
+            .map-link {
+                padding: 5px 12px;
+                font-size: 0.75em;
+            }
+            
+            .hotel-badge,
+            .driving-badge {
+                padding: 8px 12px;
+                font-size: 0.8em;
+            }
+        }
+        
+        @media (max-width: 400px) {
+            .header {
+                padding: 12px;
+            }
+            
+            .header-left h1 {
+                font-size: 1.1em;
+            }
+            
+            .itinerary-content {
+                padding: 15px 10px;
+            }
+            
+            .day-card-header {
+                padding: 10px 12px;
+            }
+            
+            .day-card-content {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <div class="header-left">
+            <h1>🗺️ Melbourne & Great Ocean Road</h1>
+            <p>Complete Interactive Guide | February 16-21, 2026</p>
+        </div>
+        <div class="header-right">
+            <div class="subtitle">Interactive Map + Full Itinerary</div>
+            <button class="toggle-btn" onclick="toggleSidebar()">Toggle Details</button>
+        </div>
+    </div>
+    
+    <div class="main-container">
+        <!-- MAP SECTION -->
+        <div class="map-container">
+            <div class="controls">
+                <button class="day-button day1 active" onclick="showDay(1)">Day 1 🏮</button>
+                <button class="day-button day2" onclick="showDay(2)">Day 2 🎊</button>
+                <button class="day-button day3" onclick="showDay(3)">Day 3 🌊</button>
+                <button class="day-button day4" onclick="showDay(4)">Day 4 🪨</button>
+                <button class="day-button day5" onclick="showDay(5)">Day 5 🍷</button>
+                <button class="day-button day6" onclick="showDay(6)">Day 6 ✈️</button>
+                <button class="day-button" onclick="showAll()">Show All</button>
+            </div>
+            
+            <div id="map"></div>
+            
+            <div class="legend">
+                <h3>Route Legend</h3>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #FF6B6B;"></div>
+                    Day 1: CNY
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #4ECDC4;"></div>
+                    Day 2: Melbourne
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #45B7D1;"></div>
+                    Day 3: GOR
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #F7B731;"></div>
+                    Day 4: 12 Apostles
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #5F27CD;"></div>
+                    Day 5: Yarra Valley
+                </div>
+                <div class="legend-item">
+                    <div class="legend-line" style="background: #00D2D3;"></div>
+                    Day 6: Departure
+                </div>
+            </div>
+        </div>
+        
+        <!-- ITINERARY SIDEBAR -->
+        <div class="itinerary-sidebar" id="sidebar">
+            <div class="itinerary-content">
+                <div class="summary-card">
+                    <h3>📍 Your Journey</h3>
+                    <div class="summary-grid">
+                        <div class="summary-item">
+                            <strong>Distance</strong>
+                            ~500 km round trip
+                        </div>
+                        <div class="summary-item">
+                            <strong>Driving Days</strong>
+                            3 days (18-21)
+                        </div>
+                        <div class="summary-item">
+                            <strong>Hotels</strong>
+                            4 locations
+                        </div>
+                        <div class="summary-item">
+                            <strong>Highlights</strong>
+                            12 Apostles, Wineries
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DAY 1 -->
+                <div class="day-card expanded" onclick="toggleDay(this)">
+                    <div class="day-card-header">
+                        <div>
+                            <h3>Day 1 - Feb 16 🏮</h3>
+                            <p>Arrival & Chinese New Year</p>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="day-card-body">
+                        <div class="day-card-content">
+                            <div class="hotel-badge">
+                                <strong>🏨 W Melbourne</strong><br>
+                                408 Flinders Lane
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">1. Airport → W Melbourne</div>
+                                    <div class="time-mini">11:00 AM</div>
+                                </div>
+                                <div class="location-mini-details">Arrive, check-in, rest</div>
+                                <a href="http://maps.apple.com/?daddr=408+Flinders+Lane,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">2. Chinatown</div>
+                                    <div class="time-mini">6:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">CNY celebrations, lion dances, lanterns</div>
+                                <a href="http://maps.apple.com/?daddr=Little+Bourke+Street,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">3. Flower Drum</div>
+                                    <div class="time-mini">7:30 PM</div>
+                                </div>
+                                <div class="location-mini-details">Fine dining Cantonese - Book ahead!</div>
+                                <a href="http://maps.apple.com/?daddr=17+Market+Lane,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DAY 2 -->
+                <div class="day-card" onclick="toggleDay(this)">
+                    <div class="day-card-header">
+                        <div>
+                            <h3>Day 2 - Feb 17 🎊</h3>
+                            <p>Chinese New Year & Melbourne</p>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="day-card-body">
+                        <div class="day-card-content">
+                            <div class="hotel-badge">
+                                <strong>🏨 W Melbourne</strong><br>
+                                408 Flinders Lane
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">1. Federation Square</div>
+                                    <div class="time-mini">9:00 AM</div>
+                                </div>
+                                <div class="location-mini-details">CNY events, dragon dances</div>
+                                <a href="http://maps.apple.com/?daddr=Federation+Square,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">2. Queen Victoria Market</div>
+                                    <div class="time-mini">11:00 AM</div>
+                                </div>
+                                <div class="location-mini-details">Fresh produce, lunch</div>
+                                <a href="http://maps.apple.com/?daddr=Queen+Victoria+Market,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">3. NGV Australia</div>
+                                    <div class="time-mini">2:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">National Gallery - Free entry</div>
+                                <a href="http://maps.apple.com/?daddr=NGV+Australia,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">4. Hosier Lane</div>
+                                    <div class="time-mini">4:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">Famous street art</div>
+                                <a href="http://maps.apple.com/?daddr=Hosier+Lane,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">5. Lui Bar</div>
+                                    <div class="time-mini">5:30 PM</div>
+                                </div>
+                                <div class="location-mini-details">Sunset drinks, Level 55 views</div>
+                                <a href="http://maps.apple.com/?daddr=525+Collins+Street,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">6. Cumulus Inc.</div>
+                                    <div class="time-mini">7:30 PM</div>
+                                </div>
+                                <div class="location-mini-details">Dinner - modern Australian</div>
+                                <a href="http://maps.apple.com/?daddr=45+Flinders+Lane,Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DAY 3 -->
+                <div class="day-card" onclick="toggleDay(this)">
+                    <div class="day-card-header">
+                        <div>
+                            <h3>Day 3 - Feb 18 🌊</h3>
+                            <p>Great Ocean Road to Apollo Bay</p>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="day-card-body">
+                        <div class="day-card-content">
+                            <div class="hotel-badge">
+                                <strong>🏨 VUE Grand Apartments</strong><br>
+                                67-69 Great Ocean Road, Apollo Bay<br>
+                                <strong>BOOK: 2BR Penthouse Ocean View</strong>
+                            </div>
+                            
+                            <div class="driving-badge">
+                                <strong>🚗 Driving:</strong> ~3.5 hours (200 km)<br>
+                                Route: Melbourne → Torquay → Lorne → Apollo Bay
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">1. Memorial Arch</div>
+                                    <div class="time-mini">9:30 AM</div>
+                                </div>
+                                <div class="location-mini-details">Official GOR start - photo stop</div>
+                                <a href="http://maps.apple.com/?daddr=Great+Ocean+Road+Memorial+Arch,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">2. Bells Beach</div>
+                                    <div class="time-mini">10:15 AM</div>
+                                </div>
+                                <div class="location-mini-details">Famous surf beach</div>
+                                <a href="http://maps.apple.com/?daddr=Bells+Beach,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">3. Lorne - LUNCH</div>
+                                    <div class="time-mini">12:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">Beach Pavilion or Bottle of Milk</div>
+                                <a href="http://maps.apple.com/?daddr=Lorne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">4. Teddy's Lookout</div>
+                                    <div class="time-mini">2:15 PM</div>
+                                </div>
+                                <div class="location-mini-details">Panoramic coastal views</div>
+                                <a href="http://maps.apple.com/?daddr=Teddys+Lookout,Lorne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">5. Kennett River 🐨</div>
+                                    <div class="time-mini">3:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">WILD KOALAS in trees!</div>
+                                <a href="http://maps.apple.com/?daddr=Kennett+River,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">6. VUE Grand - CHECK IN</div>
+                                    <div class="time-mini">4:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">Luxury penthouse! Spa, sunset views</div>
+                                <a href="http://maps.apple.com/?daddr=67+Great+Ocean+Road,Apollo+Bay,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">7. Dinner - Apollo Bay</div>
+                                    <div class="time-mini">7:30 PM</div>
+                                </div>
+                                <div class="location-mini-details">Chris's Beacon Point or Bay Leaf</div>
+                                <a href="http://maps.apple.com/?daddr=Chris+Beacon+Point,Apollo+Bay,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DAY 4 -->
+                <div class="day-card" onclick="toggleDay(this)">
+                    <div class="day-card-header">
+                        <div>
+                            <h3>Day 4 - Feb 19 🪨</h3>
+                            <p>12 Apostles & Return to Melbourne</p>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="day-card-body">
+                        <div class="day-card-content">
+                            <div class="hotel-badge">
+                                <strong>🏨 Park Hyatt Melbourne</strong><br>
+                                1 Parliament Square, East Melbourne
+                            </div>
+                            
+                            <div class="driving-badge">
+                                <strong>🚗 Driving:</strong> ~4 hours total<br>
+                                Route: Apollo Bay → 12 Apostles → Melbourne
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">1. Mait's Rest</div>
+                                    <div class="time-mini">9:30 AM</div>
+                                </div>
+                                <div class="location-mini-details">15-min rainforest walk</div>
+                                <a href="http://maps.apple.com/?daddr=Maits+Rest,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">2. 12 APOSTLES ⭐</div>
+                                    <div class="time-mini">11:30 AM</div>
+                                </div>
+                                <div class="location-mini-details">MAIN ATTRACTION! Limestone stacks</div>
+                                <a href="http://maps.apple.com/?daddr=12+Apostles,Princetown,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">3. Loch Ard Gorge</div>
+                                    <div class="time-mini">12:45 PM</div>
+                                </div>
+                                <div class="location-mini-details">Beautiful beach, shipwreck story</div>
+                                <a href="http://maps.apple.com/?daddr=Loch+Ard+Gorge,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">4. London Bridge</div>
+                                    <div class="time-mini">1:30 PM</div>
+                                </div>
+                                <div class="location-mini-details">Natural rock arch (optional)</div>
+                                <a href="http://maps.apple.com/?daddr=London+Bridge,Port+Campbell,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">5. Park Hyatt - CHECK IN</div>
+                                    <div class="time-mini">6:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">Arrive Melbourne after 3-hour drive</div>
+                                <a href="http://maps.apple.com/?daddr=1+Parliament+Square,East+Melbourne,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DAY 5 -->
+                <div class="day-card" onclick="toggleDay(this)">
+                    <div class="day-card-header">
+                        <div>
+                            <h3>Day 5 - Feb 20 🍷</h3>
+                            <p>Yarra Valley Wine Country</p>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="day-card-body">
+                        <div class="day-card-content">
+                            <div class="hotel-badge">
+                                <strong>🏨 Balgownie Estate Yarra Valley</strong><br>
+                                1309 Melba Highway, Yarra Glen<br>
+                                <strong>BOOK: Vineyard Room + Rae's Dinner</strong>
+                            </div>
+                            
+                            <div class="driving-badge">
+                                <strong>🚗 Driving:</strong> ~1 hour to Yarra Valley
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">1. Healesville Sanctuary</div>
+                                    <div class="time-mini">10:30 AM</div>
+                                </div>
+                                <div class="location-mini-details">Koalas, kangaroos, platypus, devils</div>
+                                <a href="http://maps.apple.com/?daddr=Healesville+Sanctuary,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">2. Yering Station - LUNCH</div>
+                                    <div class="time-mini">1:15 PM</div>
+                                </div>
+                                <div class="location-mini-details">Historic winery, excellent restaurant</div>
+                                <a href="http://maps.apple.com/?daddr=38+Melba+Highway,Yering,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">3. Domaine Chandon</div>
+                                    <div class="time-mini">3:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">Sparkling wines tasting</div>
+                                <a href="http://maps.apple.com/?daddr=Domaine+Chandon,Coldstream,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">4. Oakridge Wines</div>
+                                    <div class="time-mini">4:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">Premium wines, scenic</div>
+                                <a href="http://maps.apple.com/?daddr=Oakridge+Wines,Coldstream,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">5. Balgownie Estate - CHECK IN</div>
+                                    <div class="time-mini">6:00 PM</div>
+                                </div>
+                                <div class="location-mini-details">Vineyard resort! Dinner at Rae's</div>
+                                <a href="http://maps.apple.com/?daddr=1309+Melba+Highway,Yarra+Glen,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- DAY 6 -->
+                <div class="day-card" onclick="toggleDay(this)">
+                    <div class="day-card-header">
+                        <div>
+                            <h3>Day 6 - Feb 21 ✈️</h3>
+                            <p>St Kilda & Departure</p>
+                        </div>
+                        <div class="expand-icon">▼</div>
+                    </div>
+                    <div class="day-card-body">
+                        <div class="day-card-content">
+                            <div class="driving-badge">
+                                <strong>🚗 Driving:</strong> ~1.5 hours total<br>
+                                <strong>Flight:</strong> 1:00 PM Departure
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">1. Drive to St Kilda</div>
+                                    <div class="time-mini">9:00 AM</div>
+                                </div>
+                                <div class="location-mini-details">Check out Balgownie (45 min drive)</div>
+                                <a href="http://maps.apple.com/?daddr=St+Kilda,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">2. St Kilda Beach & Pier</div>
+                                    <div class="time-mini">9:45 AM</div>
+                                </div>
+                                <div class="location-mini-details">Quick beach walk, iconic pier</div>
+                                <a href="http://maps.apple.com/?daddr=St+Kilda+Pier,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">3. Monarch Cakes</div>
+                                    <div class="time-mini">10:00 AM</div>
+                                </div>
+                                <div class="location-mini-details">Coffee & brunch</div>
+                                <a href="http://maps.apple.com/?daddr=103+Acland+Street,St+Kilda,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                            
+                            <div class="location-mini">
+                                <div class="location-mini-header">
+                                    <div class="location-mini-title">4. Melbourne Airport</div>
+                                    <div class="time-mini">11:00 AM</div>
+                                </div>
+                                <div class="location-mini-details">Drop rental car, check-in</div>
+                                <a href="http://maps.apple.com/?daddr=Melbourne+Airport,VIC" class="map-link">🍎 Navigate</a>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- TIPS -->
+                <div class="tips-card">
+                    <h3>📱 Quick Tips</h3>
+                    <ul>
+                        <li>Download offline maps before Great Ocean Road</li>
+                        <li>Drive on LEFT side of road!</li>
+                        <li>Fill up gas in Lorne or Apollo Bay</li>
+                        <li>Watch for wildlife at dawn/dusk</li>
+                        <li>Book restaurants in advance</li>
+                        <li>Sunscreen essential (Aussie sun is strong!)</li>
+                    </ul>
+                </div>
+                
+                <div class="tips-card">
+                    <h3>🎯 Booking Checklist</h3>
+                    <ul>
+                        <li>✅ W Melbourne (Feb 16-17)</li>
+                        <li>❗ VUE Grand Apollo Bay (Feb 18) - BOOK NOW</li>
+                        <li>✅ Park Hyatt Melbourne (Feb 19)</li>
+                        <li>❗ Balgownie Estate (Feb 20) - BOOK NOW</li>
+                        <li>❗ Rental Car (Feb 18-21) - BOOK NOW</li>
+                        <li>❗ Restaurant reservations</li>
+                    </ul>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Toggle sidebar visibility
+        function toggleSidebar() {
+            document.getElementById('sidebar').classList.toggle('hidden');
+        }
+        
+        // Toggle day card expansion
+        function toggleDay(element) {
+            element.classList.toggle('expanded');
+        }
+
+        // Initialize map centered on Melbourne
+        const map = L.map('map').setView([-37.8136, 144.9631], 9);
+
+        // Add OpenStreetMap tiles
+        L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+            attribution: '© OpenStreetMap contributors',
+            maxZoom: 18
+        }).addTo(map);
+
+        // Custom icon function
+        function createCustomIcon(color, number) {
+            return L.divIcon({
+                className: 'custom-div-icon',
+                html: `<div style="background-color: ${color}; width: 32px; height: 32px; border-radius: 50%; border: 3px solid white; box-shadow: 0 2px 8px rgba(0,0,0,0.3); display: flex; align-items: center; justify-content: center; font-weight: bold; color: white; font-size: 14px;">${number}</div>`,
+                iconSize: [32, 32],
+                iconAnchor: [16, 16]
+            });
+        }
+
+        // Store all layers by day
+        const dayLayers = {
+            1: [],
+            2: [],
+            3: [],
+            4: [],
+            5: [],
+            6: []
+        };
+
+        // Day 1: Arrival & Chinese New Year
+        const day1Locations = [
+            {
+                lat: -37.8136, lng: 144.9631,
+                title: "1. W Melbourne",
+                time: "11:00 AM",
+                details: "Check-in, rest and freshen up",
+                address: "408 Flinders Lane, Melbourne VIC 3000"
+            },
+            {
+                lat: -37.8116, lng: 144.9686,
+                title: "2. Chinatown",
+                time: "6:00 PM",
+                details: "Chinese New Year celebrations, lion dances, lanterns",
+                address: "Little Bourke Street, Melbourne VIC 3000"
+            },
+            {
+                lat: -37.8124, lng: 144.9683,
+                title: "3. Flower Drum",
+                time: "7:30 PM",
+                details: "Fine dining Cantonese - Book ahead!",
+                address: "17 Market Lane, Melbourne VIC 3000"
+            }
+        ];
+
+        // Day 2: Melbourne Exploration
+        const day2Locations = [
+            {
+                lat: -37.8136, lng: 144.9631,
+                title: "Start: W Melbourne",
+                time: "9:00 AM",
+                details: "Begin day exploration",
+                address: "408 Flinders Lane"
+            },
+            {
+                lat: -37.8179, lng: 144.9690,
+                title: "1. Federation Square",
+                time: "9:30 AM",
+                details: "Chinese New Year events, dragon dances",
+                address: "Swanston & Flinders Street"
+            },
+            {
+                lat: -37.8076, lng: 144.9568,
+                title: "2. Queen Victoria Market",
+                time: "11:00 AM",
+                details: "Fresh produce, gourmet foods, lunch",
+                address: "Queen Street, Melbourne"
+            },
+            {
+                lat: -37.8179, lng: 144.9690,
+                title: "3. NGV Australia",
+                time: "2:00 PM",
+                details: "National Gallery - Free entry",
+                address: "Federation Square"
+            },
+            {
+                lat: -37.8165, lng: 144.9695,
+                title: "4. Hosier Lane",
+                time: "4:00 PM",
+                details: "Famous street art",
+                address: "Hosier Lane, Melbourne"
+            },
+            {
+                lat: -37.8162, lng: 144.9640,
+                title: "5. Lui Bar",
+                time: "5:30 PM",
+                details: "Sunset drinks, Level 55 views",
+                address: "525 Collins Street"
+            },
+            {
+                lat: -37.8150, lng: 144.9668,
+                title: "6. Cumulus Inc.",
+                time: "7:30 PM",
+                details: "Dinner - trendy modern Australian",
+                address: "45 Flinders Lane"
+            }
+        ];
+
+        // Day 3: Great Ocean Road
+        const day3Locations = [
+            {
+                lat: -37.8136, lng: 144.9631,
+                title: "Start: W Melbourne",
+                time: "8:00 AM",
+                details: "Check out, begin Great Ocean Road journey",
+                address: "Depart Melbourne"
+            },
+            {
+                lat: -38.3331, lng: 144.3261,
+                title: "1. Memorial Arch",
+                time: "9:30 AM",
+                details: "Official start of Great Ocean Road",
+                address: "Eastern View, VIC"
+            },
+            {
+                lat: -38.3694, lng: 144.2892,
+                title: "2. Bells Beach",
+                time: "10:15 AM",
+                details: "World-famous surf beach",
+                address: "Bells Beach, VIC"
+            },
+            {
+                lat: -38.4072, lng: 144.1772,
+                title: "3. Anglesea",
+                time: "11:00 AM",
+                details: "Quick stop, kangaroos at golf course",
+                address: "Anglesea, VIC"
+            },
+            {
+                lat: -38.5425, lng: 143.9786,
+                title: "4. Lorne - LUNCH",
+                time: "12:00 PM",
+                details: "Lunch at Beach Pavilion, beach walk",
+                address: "Mountjoy Parade, Lorne"
+            },
+            {
+                lat: -38.5503, lng: 143.9812,
+                title: "5. Teddy's Lookout",
+                time: "2:15 PM",
+                details: "Panoramic coastal views",
+                address: "Lorne, VIC"
+            },
+            {
+                lat: -38.6361, lng: 143.8558,
+                title: "6. Kennett River - KOALAS!",
+                time: "3:00 PM",
+                details: "Wild koalas in eucalyptus trees",
+                address: "Kennett River, VIC"
+            },
+            {
+                lat: -38.7567, lng: 143.6701,
+                title: "7. VUE Grand Apollo Bay",
+                time: "4:00 PM",
+                details: "Check-in to luxury penthouse! Relax, spa, sunset",
+                address: "67-69 Great Ocean Road, Apollo Bay"
+            }
+        ];
+
+        // Day 4: 12 Apostles & Return
+        const day4Locations = [
+            {
+                lat: -38.7567, lng: 143.6701,
+                title: "Start: VUE Grand",
+                time: "9:00 AM",
+                details: "Breakfast, check out",
+                address: "Apollo Bay"
+            },
+            {
+                lat: -38.7694, lng: 143.5939,
+                title: "1. Mait's Rest",
+                time: "9:30 AM",
+                details: "Rainforest walk - 15 minutes",
+                address: "Wyelangta, VIC"
+            },
+            {
+                lat: -38.6656, lng: 143.1042,
+                title: "2. 12 APOSTLES ⭐",
+                time: "11:30 AM",
+                details: "MAIN ATTRACTION! Limestone stacks, multiple viewpoints",
+                address: "Princetown, VIC"
+            },
+            {
+                lat: -38.6686, lng: 143.0975,
+                title: "3. Loch Ard Gorge",
+                time: "12:45 PM",
+                details: "Beautiful beach, shipwreck story",
+                address: "Port Campbell, VIC"
+            },
+            {
+                lat: -38.6514, lng: 143.0608,
+                title: "4. London Bridge",
+                time: "1:30 PM",
+                details: "Natural rock arch",
+                address: "Port Campbell, VIC"
+            },
+            {
+                lat: -37.8079, lng: 144.9934,
+                title: "5. Park Hyatt Melbourne",
+                time: "6:00 PM",
+                details: "Check-in after 3-hour drive from Port Campbell",
+                address: "1 Parliament Square, East Melbourne"
+            }
+        ];
+
+        // Day 5: Yarra Valley
+        const day5Locations = [
+            {
+                lat: -37.8079, lng: 144.9934,
+                title: "Start: Park Hyatt",
+                time: "9:30 AM",
+                details: "Check out, drive to Yarra Valley",
+                address: "East Melbourne"
+            },
+            {
+                lat: -37.6833, lng: 145.5333,
+                title: "1. Healesville Sanctuary",
+                time: "10:30 AM",
+                details: "Koalas, kangaroos, platypus, Tasmanian devils",
+                address: "Badger Creek Road, Healesville"
+            },
+            {
+                lat: -37.7333, lng: 145.3167,
+                title: "2. Yering Station - LUNCH",
+                time: "1:15 PM",
+                details: "Historic winery, excellent restaurant",
+                address: "38 Melba Highway, Yering"
+            },
+            {
+                lat: -37.7333, lng: 145.4167,
+                title: "3. Domaine Chandon",
+                time: "3:00 PM",
+                details: "Sparkling wines tasting",
+                address: "727 Maroondah Highway, Coldstream"
+            },
+            {
+                lat: -37.7278, lng: 145.4222,
+                title: "4. Oakridge Wines",
+                time: "4:00 PM",
+                details: "Premium wines, scenic location",
+                address: "864 Maroondah Highway, Coldstream"
+            },
+            {
+                lat: -37.7167, lng: 145.5000,
+                title: "5. De Bortoli",
+                time: "5:00 PM",
+                details: "Award-winning wines",
+                address: "58 Pinnacle Lane, Dixons Creek"
+            },
+            {
+                lat: -37.6667, lng: 145.3833,
+                title: "6. Balgownie Estate",
+                time: "6:00 PM",
+                details: "Check-in! Vineyard resort, dinner at Rae's",
+                address: "1309 Melba Highway, Yarra Glen"
+            }
+        ];
+
+        // Day 6: Departure
+        const day6Locations = [
+            {
+                lat: -37.6667, lng: 145.3833,
+                title: "Start: Balgownie Estate",
+                time: "9:00 AM",
+                details: "Breakfast, check out",
+                address: "Yarra Glen"
+            },
+            {
+                lat: -37.8658, lng: 144.9803,
+                title: "1. St Kilda Beach",
+                time: "9:45 AM",
+                details: "Beach walk, St Kilda Pier",
+                address: "Jacka Boulevard, St Kilda"
+            },
+            {
+                lat: -37.8672, lng: 144.9786,
+                title: "2. Monarch Cakes",
+                time: "10:00 AM",
+                details: "Coffee and brunch",
+                address: "103 Acland Street, St Kilda"
+            },
+            {
+                lat: -37.6733, lng: 144.8433,
+                title: "3. Melbourne Airport",
+                time: "11:00 AM",
+                details: "Drop rental car, 1:00 PM departure",
+                address: "Tullamarine, VIC"
+            }
+        ];
+
+        // Function to create popup content
+        function createPopup(location) {
+            const appleLink = `http://maps.apple.com/?daddr=${encodeURIComponent(location.address)}`;
+            return `
+                <div class="popup-title">${location.title}</div>
+                <div class="popup-time">${location.time}</div>
+                <div class="popup-details">${location.details}</div>
+                <div class="popup-address">📍 ${location.address}</div>
+                <a href="${appleLink}" target="_blank" class="popup-link">🍎 Open in Apple Maps</a>
+            `;
+        }
+
+        // Function to add locations and routes for a day
+        function addDay(locations, color, dayNum) {
+            const markers = [];
+            
+            // Add markers
+            locations.forEach((loc, index) => {
+                const marker = L.marker([loc.lat, loc.lng], {
+                    icon: createCustomIcon(color, index === 0 ? 'S' : index)
+                }).bindPopup(createPopup(loc));
+                
+                dayLayers[dayNum].push(marker);
+                markers.push([loc.lat, loc.lng]);
+            });
+            
+            // Add route line connecting all points
+            if (locations.length > 1) {
+                const polyline = L.polyline(markers, {
+                    color: color,
+                    weight: 4,
+                    opacity: 0.7,
+                    smoothFactor: 1
+                });
+                dayLayers[dayNum].push(polyline);
+            }
+        }
+
+        // Add all days
+        addDay(day1Locations, '#FF6B6B', 1);
+        addDay(day2Locations, '#4ECDC4', 2);
+        addDay(day3Locations, '#45B7D1', 3);
+        addDay(day4Locations, '#F7B731', 4);
+        addDay(day5Locations, '#5F27CD', 5);
+        addDay(day6Locations, '#00D2D3', 6);
+
+        // Currently visible layers
+        let currentLayers = [];
+
+        // Show specific day
+        function showDay(dayNum) {
+            // Remove all current layers
+            currentLayers.forEach(layer => map.removeLayer(layer));
+            currentLayers = [];
+            
+            // Add selected day layers
+            dayLayers[dayNum].forEach(layer => {
+                layer.addTo(map);
+                currentLayers.push(layer);
+            });
+            
+            // Update active button
+            document.querySelectorAll('.day-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelector(`.day${dayNum}`).classList.add('active');
+            
+            // Fit map to bounds
+            if (currentLayers.length > 0) {
+                const group = L.featureGroup(currentLayers);
+                map.fitBounds(group.getBounds().pad(0.1));
+            }
+        }
+
+        // Show all days
+        function showAll() {
+            // Remove all current layers
+            currentLayers.forEach(layer => map.removeLayer(layer));
+            currentLayers = [];
+            
+            // Add all day layers
+            for (let day = 1; day <= 6; day++) {
+                dayLayers[day].forEach(layer => {
+                    layer.addTo(map);
+                    currentLayers.push(layer);
+                });
+            }
+            
+            // Update active button
+            document.querySelectorAll('.day-button').forEach(btn => btn.classList.remove('active'));
+            document.querySelectorAll('.day-button')[6].classList.add('active');
+            
+            // Fit map to show all of Victoria
+            map.setView([-37.8, 144.5], 7);
+        }
+
+        // Initialize with Day 1
+        showDay(1);
+        
+        // Ensure map renders properly on load
+        setTimeout(() => {
+            map.invalidateSize();
+        }, 100);
+    </script>
+</body>
+</html>
